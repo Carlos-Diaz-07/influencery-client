@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import InfluencerCard from "./Card";
 import styled from "styled-components";
 
+
 const InfluencerSearch = () => {
   const [influencers, setInfluencers] = useState(null);
   const [searchString, setSearchString] = useState("");
+  const [platformString, setPlatformString] = useState("");
+  const [filteredInfluencers, setFilteredInfluencers] = useState([]);
+
   // const [platformString, setPlatformString] = useState("all");
 
   useEffect(() => {
@@ -21,6 +25,16 @@ const InfluencerSearch = () => {
       .then((response) => response.json())
       .then((data) => setInfluencers(data));
 
+  const dataFilter = (e) => {
+    const searchWord = e.target.value
+    const handleFilter = influencers.filter((influencer) => {
+      return influencer.handle.includes(searchWord);
+    });
+    setSearchString(searchWord)
+    setFilteredInfluencers(handleFilter)
+  }
+
+
   return (
     <div>
       <SearchInputContainer>
@@ -28,9 +42,9 @@ const InfluencerSearch = () => {
           placeholder="Enter influencer handle, platform, or tag"
           type="text"
           value={searchString}
-          onChange={(e) => setSearchString(e.target.value)}
+          onChange={dataFilter}
         />
-        {/* <SelectInput
+        <SelectInput
           value={platformString}
           onChange={(e) => setPlatformString(e.target.value)}
           name="platforms"
@@ -42,15 +56,15 @@ const InfluencerSearch = () => {
           <option value="facebook">Facebook</option>
           <option value="tiktok">Tik-Tok</option>
           <option value="youtube">Youtube</option>
-        </SelectInput> */}
+        </SelectInput>
       </SearchInputContainer>
       <SearchContainer>
-        {!influencers && <Loader />}
-        <div>
-          {influencers?.map((inf, i) => (
-            <InfluencerCard influencer={inf} key={"inf_card_" + i} />
-          ))}
-        </div>
+          {!influencers && <Loader />}
+            <div>
+              {filteredInfluencers?.map((inf, i) => (
+                <InfluencerCard influencer={inf} key={"inf_card_" + i} />
+              ))}
+            </div>
       </SearchContainer>
     </div>
   );
