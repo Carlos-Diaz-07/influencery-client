@@ -5,7 +5,6 @@ import styled from "styled-components";
 
 const InfluencerSearch = () => {
   const [influencers, setInfluencers] = useState(null);
-  const [searchString, setSearchString] = useState("");
   const [platformString, setPlatformString] = useState("");
   const [filteredInfluencers, setFilteredInfluencers] = useState([]);
 
@@ -23,15 +22,25 @@ const InfluencerSearch = () => {
       },
     })
       .then((response) => response.json())
-      .then((data) => setInfluencers(data));
+      .then((data) => setInfluencers(data))
 
   const dataFilter = (e) => {
-    const searchWord = e.target.value
+    const searchWord = e.target.value;
     const handleFilter = influencers.filter((influencer) => {
-      return influencer.handle.includes(searchWord);
+      return influencer.handle.toLowerCase().includes(searchWord.toLowerCase());
     });
-    setSearchString(searchWord)
-    setFilteredInfluencers(handleFilter)
+
+    setFilteredInfluencers(handleFilter);
+  }
+
+  const filterPlatform = (e) => {
+    const searchPlatform = e.target.value;
+    let platformFilter = influencers.filter((influencer) => {
+      return influencer.platform.name.toLowerCase().includes(searchPlatform.toLowerCase());
+    });
+
+    setPlatformString(e.target.value);
+    setFilteredInfluencers(platformFilter);
   }
 
 
@@ -41,12 +50,12 @@ const InfluencerSearch = () => {
         <SearchInput
           placeholder="Enter influencer handle, platform, or tag"
           type="text"
-          value={searchString}
+          // value={searchString}
           onChange={dataFilter}
         />
         <SelectInput
           value={platformString}
-          onChange={(e) => setPlatformString(e.target.value)}
+          onChange={filterPlatform}
           name="platforms"
           id="platforms"
         >
@@ -61,7 +70,7 @@ const InfluencerSearch = () => {
       <SearchContainer>
           {!influencers && <Loader />}
             <div>
-              {filteredInfluencers?.map((inf, i) => (
+              {filteredInfluencers.map((inf, i) => (
                 <InfluencerCard influencer={inf} key={"inf_card_" + i} />
               ))}
             </div>
