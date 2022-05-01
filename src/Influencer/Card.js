@@ -17,10 +17,11 @@ const InfluencerCard = ({ influencer }) => {
       <ContentContainer>
         <FieldTitle>Handle</FieldTitle>
         <CardFields>{influencer?.handle}</CardFields>
-        <FieldTitle>Tags</FieldTitle>
+        <PrimaryTag>#{influencer?.primary_tag.name}</PrimaryTag>
+        <FieldTitle>Other Tags</FieldTitle>
         <TagContainer>
           {influencer?.tags.map((tag, i) => (
-            <Tag key={"inf_tag_key" + influencer.id + tag.id + i}>{tag.name}</Tag>
+            <SecondaryTag key={"inf_tag_key" + influencer.id + tag.id + i}>{tag.name}</SecondaryTag>
           ))}
         </TagContainer>
       </ContentContainer>
@@ -87,7 +88,17 @@ const Followers = styled.div`
   font-size: 10px;
 `;
 
-const Tag = styled.div`
+const PrimaryTag = styled.div`
+  font-size: 10px;
+  border-radius: 50px;
+  background-color: #f57a0a;
+  max-width: fit-content;
+  text-align: center;
+  font-size: 70%;
+  padding: 1px 20px;
+`;
+
+const SecondaryTag = styled.div`
   font-size: 10px;
   border-radius: 50px;
   background-color: #ff8d4b;

@@ -8,6 +8,8 @@ const InfluencerSearch = () => {
   const [platformString, setPlatformString] = useState("");
   const [filteredInfluencers, setFilteredInfluencers] = useState([]);
   const [searchString, setSearchString] = useState("");
+  const [searchByString, setSearchByString] = useState("");
+
 
 
   useEffect(() => {
@@ -24,18 +26,30 @@ const InfluencerSearch = () => {
       .then((response) => response.json())
       .then((data) => setInfluencers(data))
 
-
-  const searchInputFilter = (searchInput, filteredByPlatform) => {
+  // This is to filter influencers by the text input & needs to be passed on
+  // and array of influencers already filtered by the platform filter if you want
+  // them to work together
+  const searchInputFilter = (searchInput, searchBy, filteredByPlatform) => {
     if (searchInput !== undefined) {
-      const fl = filteredByPlatform.filter((influencer) => {
-        return influencer.handle.toLowerCase().includes(searchInput.toLowerCase());
-      })
-      return fl
+      switch (searchBy) {
+        case "handle":
+          return filteredByPlatform.filter((influencer) => {
+            return influencer.handle.toLowerCase().includes(searchInput.toLowerCase());
+          });
+        case "tag":
+          return filteredByPlatform.filter((influencer) => {
+            return influencer.tags.some((tag) => tag.name.includes(searchInput.toLowerCase()));
+          });
+        default:
+          break;
+      }
     } else {
       return filteredByPlatform
     }
   }
 
+  // This is to filter by platform, only needs the platform you want to filter by
+  // and filters all the influcers available from the API
   const platformFilter = (platform) => {
     const platformFilter = influencers.filter((influencer) => {
       return ((platform === "all") ? influencers : influencer.platform.name.includes(platform));
@@ -43,10 +57,12 @@ const InfluencerSearch = () => {
     return platformFilter
   }
 
-  const dataFilter = ({ searchInput = searchString, platform = platformString }) => {
+  // This controls and connects the filters so they work together, it also centralize the onChange events
+  const dataFilter = ({ searchBy = searchByString, searchInput = searchString, platform = platformString }) => {
+    setSearchByString(searchBy)
     setPlatformString(platform);
     setSearchString(searchInput);
-    setFilteredInfluencers(searchInputFilter(searchInput, platformFilter(platform)))
+    setFilteredInfluencers(searchInputFilter(searchInput, searchBy, platformFilter(platform)))
   }
 
 
@@ -58,6 +74,15 @@ const InfluencerSearch = () => {
     return (
       <div>
         <SearchInputContainer>
+          <SelectInput
+            value={searchByString}
+            onChange={(e) => dataFilter({ searchBy: e.target.value })}
+            name="searchBy"
+            id="searchBy"
+          >
+            <option value="handle">By Handle</option>
+            <option value="tag">By Tag</option>
+          </SelectInput>
           <SearchInput
             placeholder="Enter influencer handle, platform, or tag"
             type="text"
