@@ -8,7 +8,7 @@ const InfluencerSearch = () => {
   const [platformString, setPlatformString] = useState("");
   const [filteredInfluencers, setFilteredInfluencers] = useState([]);
   const [searchString, setSearchString] = useState("");
-  const [searchByString, setSearchByString] = useState("");
+  const [sortByString, setSortByString] = useState("");
 
 
 
@@ -29,20 +29,42 @@ const InfluencerSearch = () => {
   // This is to filter influencers by the text input & needs to be passed on
   // and array of influencers already filtered by the platform filter if you want
   // them to work together
-  const searchInputFilter = (searchInput, searchBy, filteredByPlatform) => {
+  const searchInputFilter = (searchInput, filteredByPlatform, sortBy) => {
+    const filterByHandle = filteredByPlatform.filter((influencer) => {
+      return influencer.handle.toLowerCase().includes(searchInput.toLowerCase())
+    });
+
+    const filterByPrimaryTag = filteredByPlatform.filter((influencer) => {
+      return influencer.primary_tag.name.toLowerCase().includes(searchInput.toLowerCase())
+    });
+
+    const filterByTag = filteredByPlatform.filter((influencer) => {
+      return influencer.tags.some((tag) => tag.name.includes(searchInput.toLowerCase()));
+    });
+
     if (searchInput !== undefined) {
-      switch (searchBy) {
-        case "handle":
-          return filteredByPlatform.filter((influencer) => {
-            return influencer.handle.toLowerCase().includes(searchInput.toLowerCase());
+
+      // Here we are concatenating the arrays in order of importance of search field,
+      // first Handle, then PrimaryTag and last the secondayTags. I'm using "new Set" to avoid duplicates
+      const searchResult = [...new Set([...filterByHandle,...filterByPrimaryTag,...filterByTag])]
+
+      // here we are sorting the array by followers before returning it, we do
+      // nothing for relevance as it is already sorted
+      switch (sortBy) {
+        case "followersAsc":
+          searchResult.sort(function (a, b) {
+            return a.followers - b.followers;
           });
-        case "tag":
-          return filteredByPlatform.filter((influencer) => {
-            return influencer.tags.some((tag) => tag.name.includes(searchInput.toLowerCase()));
+          break;
+        case "followersDsc":
+          searchResult.sort(function (a, b) {
+            return b.followers - a.followers;
           });
+          break;
         default:
           break;
       }
+      return searchResult
     } else {
       return filteredByPlatform
     }
@@ -57,12 +79,13 @@ const InfluencerSearch = () => {
     return platformFilter
   }
 
-  // This controls and connects the filters so they work together, it also centralize the onChange events
-  const dataFilter = ({ searchBy = searchByString, searchInput = searchString, platform = platformString }) => {
-    setSearchByString(searchBy)
+  // This controls and connects the filters so they work together, it also centralize the onChange events to use just one
+  const dataFilter = ({ sortBy = sortByString, searchInput = searchString, platform = platformString }) => {
+    setSortByString(sortBy)
     setPlatformString(platform);
     setSearchString(searchInput);
-    setFilteredInfluencers(searchInputFilter(searchInput, searchBy, platformFilter(platform)))
+    // I thought about adding the "platformFilter" to the "searchInputFilter" but I feel like that function has enough going on already
+    setFilteredInfluencers(searchInputFilter(searchInput, platformFilter(platform), sortBy))
   }
 
 
@@ -75,16 +98,19 @@ const InfluencerSearch = () => {
       <div>
         <SearchInputContainer>
           <SelectInput
-            value={searchByString}
-            onChange={(e) => dataFilter({ searchBy: e.target.value })}
-            name="searchBy"
-            id="searchBy"
+            placeholder="Sort"
+            value={sortByString}
+            onChange={(e) => dataFilter({ sortBy: e.target.value })}
+            name="sortBy"
+            id="sortBy"
           >
-            <option value="handle">By Handle</option>
-            <option value="tag">By Tag</option>
+            <option value="relevance">relevance</option>
+            <option value="followersAsc">followers asc</option>
+            <option value="followersDsc">followers dsc</option>
+
           </SelectInput>
           <SearchInput
-            placeholder="Enter influencer handle, platform, or tag"
+            placeholder="Enter influencer handle or tag"
             type="text"
             value={searchString}
             onChange={(e) => dataFilter({ searchInput: e.target.value })}

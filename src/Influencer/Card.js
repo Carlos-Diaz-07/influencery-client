@@ -39,6 +39,10 @@ const Card = styled.div`
   position: relative;
   height: 330px;
   overflow: hidden;
+  transition: height 0.75s;
+  &:hover {
+    height: fit-content;
+  }
 `;
 
 const ContentContainer = styled.div`
