@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import InfluencerCard from "./Card";
 import styled from "styled-components";
+import nothing from "./nothing";
 
 
 const InfluencerSearch = () => {
@@ -88,9 +89,6 @@ const InfluencerSearch = () => {
     setFilteredInfluencers(searchInputFilter(searchInput, platformFilter(platform), sortBy))
   }
 
-
-
-
   if (!influencers) {
     return (<Loader />)
   } else
@@ -132,7 +130,7 @@ const InfluencerSearch = () => {
         <SearchContainer>
           {!influencers && <Loader />}
           <div>
-            {(filteredInfluencers.length === 0 ? influencers : filteredInfluencers).map((inf, i) => (
+            {(filteredInfluencers.length === 0 ? nothing : filteredInfluencers).map((inf, i) => (
               <InfluencerCard influencer={inf} key={"inf_card_" + i} />
             ))}
           </div>
