@@ -7,8 +7,8 @@ const InfluencerSearch = () => {
   const [influencers, setInfluencers] = useState(null);
   const [platformString, setPlatformString] = useState("");
   const [filteredInfluencers, setFilteredInfluencers] = useState([]);
+  const [searchString, setSearchString] = useState("");
 
-  // const [platformString, setPlatformString] = useState("all");
 
   useEffect(() => {
     getInfluencers();
@@ -24,59 +24,70 @@ const InfluencerSearch = () => {
       .then((response) => response.json())
       .then((data) => setInfluencers(data))
 
-  const dataFilter = (e) => {
-    const searchWord = e.target.value;
-    const handleFilter = influencers.filter((influencer) => {
-      return influencer.handle.toLowerCase().includes(searchWord.toLowerCase());
-    });
 
-    setFilteredInfluencers(handleFilter);
+  const searchInputFilter = (searchInput, filteredByPlatform) => {
+    if (searchInput !== undefined) {
+      const fl = filteredByPlatform.filter((influencer) => {
+        return influencer.handle.toLowerCase().includes(searchInput.toLowerCase());
+      })
+      return fl
+    } else {
+      return filteredByPlatform
+    }
   }
 
-  const filterPlatform = (e) => {
-    const searchPlatform = e.target.value;
-    let platformFilter = influencers.filter((influencer) => {
-      return influencer.platform.name.toLowerCase().includes(searchPlatform.toLowerCase());
+  const platformFilter = (platform) => {
+    const platformFilter = influencers.filter((influencer) => {
+      return ((platform === "all") ? influencers : influencer.platform.name.includes(platform));
     });
+    return platformFilter
+  }
 
-    setPlatformString(e.target.value);
-    setFilteredInfluencers(platformFilter);
+  const dataFilter = ({ searchInput = searchString, platform = platformString }) => {
+    setPlatformString(platform);
+    setSearchString(searchInput);
+    setFilteredInfluencers(searchInputFilter(searchInput, platformFilter(platform)))
   }
 
 
-  return (
-    <div>
-      <SearchInputContainer>
-        <SearchInput
-          placeholder="Enter influencer handle, platform, or tag"
-          type="text"
-          // value={searchString}
-          onChange={dataFilter}
-        />
-        <SelectInput
-          value={platformString}
-          onChange={filterPlatform}
-          name="platforms"
-          id="platforms"
-        >
-          <option value="all">All</option>
-          <option value="instagram">Instagram</option>
-          <option value="twitter">Twitter</option>
-          <option value="facebook">Facebook</option>
-          <option value="tiktok">Tik-Tok</option>
-          <option value="youtube">Youtube</option>
-        </SelectInput>
-      </SearchInputContainer>
-      <SearchContainer>
+
+
+  if (!influencers) {
+    return (<Loader />)
+  } else
+    return (
+      <div>
+        <SearchInputContainer>
+          <SearchInput
+            placeholder="Enter influencer handle, platform, or tag"
+            type="text"
+            value={searchString}
+            onChange={(e) => dataFilter({ searchInput: e.target.value })}
+          />
+          <SelectInput
+            value={platformString}
+            onChange={(e) => dataFilter({ platform: e.target.value })}
+            name="platforms"
+            id="platforms"
+          >
+            <option value="all">All</option>
+            <option value="instagram">Instagram</option>
+            <option value="twitter">Twitter</option>
+            <option value="facebook">Facebook</option>
+            <option value="tiktok">Tik-Tok</option>
+            <option value="youtube">Youtube</option>
+          </SelectInput>
+        </SearchInputContainer>
+        <SearchContainer>
           {!influencers && <Loader />}
-            <div>
-              {filteredInfluencers.map((inf, i) => (
-                <InfluencerCard influencer={inf} key={"inf_card_" + i} />
-              ))}
-            </div>
-      </SearchContainer>
-    </div>
-  );
+          <div>
+            {(filteredInfluencers.length === 0 ? influencers : filteredInfluencers).map((inf, i) => (
+              <InfluencerCard influencer={inf} key={"inf_card_" + i} />
+            ))}
+          </div>
+        </SearchContainer>
+      </div>
+    );
 };
 
 const SelectInput = styled.select`
